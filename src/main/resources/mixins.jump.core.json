@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "minVersion": "0.7.4",
+  "package": "nz.co.lolnet.jump.mixin.core",
+  "refmap": "mixins.jump.refmap.json",
+  "target": "@env(DEFAULT)",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+    "network.MixinNetHandlerPlayServer"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

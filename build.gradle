@@ -1,4 +1,25 @@
+buildscript {
+    repositories {
+        jcenter()
+        maven {
+            name = "minecraftforge"
+            url = "http://files.minecraftforge.net/maven"
+        }
+        maven {
+            name = "spongepowered"
+            url = "https://repo.spongepowered.org/maven"
+        }
+    }
+    
+    dependencies {
+        classpath("net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT")
+        classpath("org.spongepowered:mixingradle:0.6-SNAPSHOT")
+    }
+}
+
 apply plugin: "java"
+apply plugin: "net.minecraftforge.gradle.forge"
+apply plugin: "org.spongepowered.mixin"
 apply plugin: "signing"
 
 sourceCompatibility = 1.8
@@ -6,7 +27,20 @@ targetCompatibility = 1.8
 
 group = "nz.co.lolnet"
 archivesBaseName = "Jump"
-version = "0.0.1"
+version = "1.0.0"
+
+minecraft {
+    version = "1.12.2-14.23.4.2703"
+    runDir = "run"
+    mappings = "snapshot_20171003"
+    makeObfSourceJar = false
+}
+
+mixin {
+    defaultObfuscationEnv = searge
+    disableRefMapWarning = true
+    add(sourceSets.main, "mixins.jump.refmap.json")
+}
 
 configurations {
     provided {
@@ -23,21 +57,43 @@ repositories {
 }
 
 dependencies {
-    provided("org.spongepowered:spongeapi:7.1.0-SNAPSHOT")
-    annotationProcessor("org.spongepowered:spongeapi:7.1.0-SNAPSHOT")
+    annotationProcessor("org.spongepowered:spongecommon:7.1.0-SNAPSHOT:dev")
+    provided("org.spongepowered:spongecommon:7.1.0-SNAPSHOT:dev") {
+        exclude(module: "commons-io")
+        exclude(module: "gson")
+        exclude(module: "guava")
+        exclude(module: "launchwrapper")
+    }
 }
 
 jar {
+    manifest {
+        attributes(
+                "FMLCorePluginContainsFMLMod": true,
+                "ForceLoadAsMod": true,
+                "MixinConfigs": "mixins.jump.core.json",
+                "TweakClass": "org.spongepowered.asm.launch.MixinTweaker",
+                "TweakOrder": 0
+        )
+    }
+
     from {
         (configurations.compile - configurations.provided).collect {
             it.isDirectory() ? it : zipTree(it)
         }
     }
+
+    exclude("dummyThing")
 }
 
 processResources {
     from("LICENSE")
     rename("LICENSE", "LICENSE-" + archivesBaseName)
+    
+    from (sourceSets.main.resources.srcDirs) {
+        include("mcmod.info")
+        expand("version": version, "mcversion": minecraft.version)
+    }
 }
 
 task signJar {
