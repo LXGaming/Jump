@@ -103,6 +103,14 @@ public class Toolbox {
         }
     }
     
+    public static Optional<Integer> parseInteger(String string) {
+        try {
+            return Optional.of(Integer.parseInt(string));
+        } catch (RuntimeException ex) {
+            return Optional.empty();
+        }
+    }
+    
     public static boolean containsIgnoreCase(Collection<String> list, String targetString) {
         if (list == null || list.isEmpty()) {
             return false;

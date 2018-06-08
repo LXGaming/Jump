@@ -23,16 +23,19 @@ import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 public class Config {
     
     @Setting(value = "boss-bar-title", comment = "Boss bar title")
-    private String bossBarTitle = "&6\u26A1 &9&lJump Charge &r&6\u26A1";
+    private String bossBarTitle = "&r&6\u26A1 &9&lJump Charge &r&6\u26A1";
     
     @Setting(value = "debug", comment = "For debugging purposes")
     private boolean debug = false;
     
-    @Setting(value = "default-jump-level", comment = "Default jump level")
-    private double defaultJumpLevel = 1.5D;
+    @Setting(value = "default-multiplier", comment = "Default multiplier")
+    private double defaultMultiplier = 1.5D;
     
-    @Setting(value = "void-jump-level", comment = "Void jump level, used when a player falls into the void")
-    private double voidJumpLevel = 10.0D;
+    @Setting(value = "default-capacity", comment = "Default capacity")
+    private int defaultCapacity = 100;
+    
+    @Setting(value = "void-multiplier", comment = "Void multiplier, Applied to the player when below Y 0")
+    private double voidMultiplier = 10.0D;
     
     public String getBossBarTitle() {
         return bossBarTitle;
@@ -42,11 +45,15 @@ public class Config {
         return debug;
     }
     
-    public double getDefaultJumpLevel() {
-        return defaultJumpLevel;
+    public double getDefaultMultiplier() {
+        return defaultMultiplier;
     }
     
-    public double getVoidJumpLevel() {
-        return voidJumpLevel;
+    public int getDefaultCapacity() {
+        return defaultCapacity;
+    }
+    
+    public double getVoidMultiplier() {
+        return voidMultiplier;
     }
 }

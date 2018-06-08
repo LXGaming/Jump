@@ -45,7 +45,7 @@ public class JumpDataBuilder extends AbstractDataBuilder<JumpData> implements Da
     }
     
     @Override
-    protected Optional<JumpData> buildContent(DataView dataView) throws InvalidDataException {
-        return create().from(dataView.copy());
+    protected Optional<JumpData> buildContent(DataView container) throws InvalidDataException {
+        return create().from(container.copy());
     }
 }

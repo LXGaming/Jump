@@ -18,11 +18,14 @@ package nz.co.lolnet.jump.managers;
 
 import nz.co.lolnet.jump.Jump;
 import nz.co.lolnet.jump.configuration.Config;
+import nz.co.lolnet.jump.util.Reference;
 import nz.co.lolnet.jump.util.Toolbox;
 import org.spongepowered.api.boss.BossBarColors;
 import org.spongepowered.api.boss.BossBarOverlays;
 import org.spongepowered.api.boss.ServerBossBar;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.entity.living.player.gamemode.GameMode;
+import org.spongepowered.api.entity.living.player.gamemode.GameModes;
 import org.spongepowered.api.text.Text;
 
 import java.util.Map;
@@ -46,6 +49,7 @@ public final class JumpManager {
                 .build();
         
         serverBossBar.addPlayer(player);
+        
         return getBossBars().put(player.getUniqueId(), serverBossBar) == null;
     }
     
@@ -63,16 +67,11 @@ public final class JumpManager {
     }
     
     public static void updateBossBar(Player player, float percent) {
-        if (percent < 0.0F || percent > 1.0F) {
-            return;
-        }
-        
         ServerBossBar serverBossBar = getBossBar(player).orElse(null);
         if (serverBossBar == null) {
             return;
         }
         
-        serverBossBar.setVisible(true);
         serverBossBar.setPercent(percent);
         if (serverBossBar.getPercent() >= 1.0F) {
             serverBossBar.setColor(BossBarColors.GREEN);
@@ -83,7 +82,56 @@ public final class JumpManager {
         }
     }
     
-    public static Optional<ServerBossBar> getBossBar(Player player) {
+    public static void updateBossBar(Player player, boolean visible) {
+        ServerBossBar serverBossBar = getBossBar(player).orElse(null);
+        if (serverBossBar == null) {
+            return;
+        }
+        
+        serverBossBar.setVisible(visible);
+    }
+    
+    public static boolean isValidGameMode(GameMode gameMode) {
+        return gameMode == GameModes.ADVENTURE || gameMode == GameModes.SURVIVAL;
+    }
+    
+    public static float getPercent(int charge, int capacity) {
+        if (capacity <= 0) {
+            return 1.0F;
+        }
+        
+        return (float) Math.max(0, charge) / capacity;
+    }
+    
+    public static Optional<Integer> getCapacity(Player player) {
+        Optional<String> option = Toolbox.getOptionFromSubject(player, Reference.PLUGIN_ID + "-capacity");
+        if (option.isPresent()) {
+            Optional<Integer> capacity = option.flatMap(Toolbox::parseInteger);
+            if (capacity.isPresent()) {
+                return capacity;
+            }
+            
+            Jump.getInstance().getLogger().warn("Failed to parse capacity for {} ({})", player.getName(), player.getUniqueId());
+        }
+        
+        return Jump.getInstance().getConfig().map(Config::getDefaultCapacity);
+    }
+    
+    public static Optional<Double> getMultiplier(Player player) {
+        Optional<String> option = Toolbox.getOptionFromSubject(player, Reference.PLUGIN_ID + "-multiplier");
+        if (option.isPresent()) {
+            Optional<Double> multiplier = option.flatMap(Toolbox::parseDouble);
+            if (multiplier.isPresent()) {
+                return multiplier;
+            }
+            
+            Jump.getInstance().getLogger().warn("Failed to parse multiplier for {} ({})", player.getName(), player.getUniqueId());
+        }
+        
+        return Jump.getInstance().getConfig().map(Config::getDefaultMultiplier);
+    }
+    
+    private static Optional<ServerBossBar> getBossBar(Player player) {
         return Optional.ofNullable(getBossBars().get(player.getUniqueId()));
     }
     

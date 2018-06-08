@@ -21,19 +21,18 @@ import net.minecraft.util.math.Vec3d;
 import nz.co.lolnet.jump.Jump;
 import nz.co.lolnet.jump.configuration.Config;
 import nz.co.lolnet.jump.data.JumpData;
+import nz.co.lolnet.jump.data.JumpDataBuilder;
 import nz.co.lolnet.jump.event.ChangeFlyEvent;
 import nz.co.lolnet.jump.managers.JumpManager;
-import nz.co.lolnet.jump.util.Toolbox;
 import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.entity.living.player.gamemode.GameMode;
-import org.spongepowered.api.entity.living.player.gamemode.GameModes;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.cause.entity.damage.DamageTypes;
 import org.spongepowered.api.event.cause.entity.damage.source.DamageSource;
 import org.spongepowered.api.event.entity.DamageEntityEvent;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
+import org.spongepowered.api.event.entity.living.humanoid.ChangeGameModeEvent;
 import org.spongepowered.api.event.filter.Getter;
 import org.spongepowered.api.event.filter.cause.Root;
 import org.spongepowered.api.event.network.ClientConnectionEvent;
@@ -41,64 +40,84 @@ import org.spongepowered.api.util.Direction;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
-import java.util.Optional;
-
 public class JumpListener {
     
     @Listener
     public void onChangeFly(ChangeFlyEvent event, @Getter("getTargetEntity") Player player) {
-        GameMode gamemode = player.get(Keys.GAME_MODE).orElse(GameModes.NOT_SET);
-        if (!event.isFlying() || (gamemode != GameModes.ADVENTURE && gamemode != GameModes.SURVIVAL)) {
+        if (event.isCancelled() || !event.isFlying() || !player.get(Keys.GAME_MODE).map(JumpManager::isValidGameMode).orElse(false)) {
             return;
         }
         
         event.setCancelled(true);
-        Optional<JumpData> jumpData = player.get(JumpData.class);
-        if (!jumpData.isPresent() || jumpData.get().getCount() < 100) {
+        
+        int capacity = JumpManager.getCapacity(player).orElse(-1);
+        int charge = player.get(JumpData.CHARGE_KEY).orElse(-1);
+        if (capacity < 0 || charge < 0 || charge < capacity) {
             return;
         }
         
-        jumpData.get().setCount(0);
-        player.offer(jumpData.get());
+        player.offer(Keys.CAN_FLY, false);
+        player.offer(JumpData.CHARGE_KEY, 0);
         JumpManager.updateBossBar(player, 0.0F);
-        Optional<Double> jumpLevel = getJumpLevel(player);
-        if (jumpLevel.isPresent() && jumpLevel.get() > 0.0D) {
-            Vec3d vector = ((Entity) player).getLookVec().scale(jumpLevel.get());
-            player.setVelocity(player.getVelocity().add(vector.x, jumpLevel.get(), vector.z));
+        double multiplier = JumpManager.getMultiplier(player).orElse(0.0D);
+        if (multiplier > 0.0D) {
+            Vec3d vector = ((Entity) player).getLookVec().scale(multiplier);
+            player.setVelocity(player.getVelocity().add(vector.x, multiplier, vector.z));
         }
+    }
+    
+    @Listener
+    public void onChangeGameMode(ChangeGameModeEvent event, @Getter("getTargetEntity") Player player) {
+        if (event.isCancelled()) {
+            return;
+        }
+        
+        JumpManager.updateBossBar(player, JumpManager.isValidGameMode(event.getGameMode()));
     }
     
     @Listener
     public void onClientConnectionDisconnect(ClientConnectionEvent.Disconnect event, @Getter("getTargetEntity") Player player) {
         JumpManager.removeBossBar(player);
-        GameMode gamemode = player.get(Keys.GAME_MODE).orElse(GameModes.NOT_SET);
-        if (gamemode != GameModes.ADVENTURE && gamemode != GameModes.SURVIVAL) {
-            return;
+        if (player.get(Keys.GAME_MODE).map(JumpManager::isValidGameMode).orElse(false)) {
+            player.offer(Keys.CAN_FLY, false);
+            player.offer(Keys.IS_FLYING, false);
         }
-        
-        player.offer(Keys.CAN_FLY, false);
     }
     
     @Listener
     public void onClientConnectionJoin(ClientConnectionEvent.Join event, @Getter("getTargetEntity") Player player) {
         JumpManager.createBossBar(player);
-        Optional<JumpData> jumpData = player.get(JumpData.class);
-        if (!jumpData.isPresent()) {
+        
+        JumpData jumpData = player.get(JumpData.class).orElse(JumpDataBuilder.builder().create());
+        if (jumpData.getCharge() < 0) {
+            jumpData.setCharge(0);
+            Jump.getInstance().getLogger().warn("Invalid charge for {} ({})", player.getName(), player.getUniqueId());
+        }
+        
+        player.offer(jumpData);
+        
+        int capacity = JumpManager.getCapacity(player).orElse(-1);
+        int charge = player.get(JumpData.CHARGE_KEY).orElse(-1);
+        if (capacity < 0 || charge < 0) {
             return;
         }
         
-        JumpManager.updateBossBar(player, (float) jumpData.get().getCount() / (float) 100);
+        JumpManager.updateBossBar(player, JumpManager.getPercent(charge, capacity));
+        JumpManager.updateBossBar(player, player.get(Keys.GAME_MODE).map(JumpManager::isValidGameMode).orElse(false));
     }
     
     @Listener
     public void onDamageEntity(DamageEntityEvent event, @Root DamageSource damageSource, @Getter("getTargetEntity") Player player) {
+        if (event.isCancelled()) {
+            return;
+        }
+        
         event.setCancelled(damageSource.getType().equals(DamageTypes.FALL) && player.hasPermission("jump.nofalldamage"));
     }
     
     @Listener
     public void onMoveEntity(MoveEntityEvent event, @Getter("getTargetEntity") Player player) {
-        GameMode gamemode = player.get(Keys.GAME_MODE).orElse(GameModes.NOT_SET);
-        if (gamemode != GameModes.ADVENTURE && gamemode != GameModes.SURVIVAL) {
+        if (event.isCancelled() || !player.get(Keys.GAME_MODE).map(JumpManager::isValidGameMode).orElse(false)) {
             return;
         }
         
@@ -109,37 +128,31 @@ public class JumpListener {
         }
         
         if (from.getBlockY() > to.getBlockY() && to.getBlockY() < 0) {
-            Optional<Double> voidJumpLevel = Jump.getInstance().getConfig().map(Config::getVoidJumpLevel);
-            if (voidJumpLevel.isPresent() && voidJumpLevel.get() > 0.0D) {
-                player.setVelocity(player.getVelocity().max(Double.MIN_VALUE, voidJumpLevel.get(), Double.MIN_VALUE));
+            double voidMultiplier = Jump.getInstance().getConfig().map(Config::getVoidMultiplier).orElse(0.0D);
+            if (voidMultiplier > 0.0D) {
+                player.setVelocity(player.getVelocity().max(Double.MIN_VALUE, voidMultiplier, Double.MIN_VALUE));
             }
             
             return;
         }
         
-        JumpData jumpData = player.get(JumpData.class).orElse(new JumpData(0));
-        if (jumpData.getCount() >= 100) {
+        if (to.getBlockY() > to.getExtent().getDimension().getBuildHeight()) {
+            return;
+        }
+        
+        int capacity = JumpManager.getCapacity(player).orElse(-1);
+        int charge = player.get(JumpData.CHARGE_KEY).orElse(-1);
+        if (capacity < 0 || charge < 0) {
+            return;
+        }
+        
+        if (charge >= capacity) {
             player.offer(Keys.CAN_FLY, true);
             JumpManager.updateBossBar(player, 1.0F);
         } else if (player.isOnGround() || player.getLocation().getBlockRelative(Direction.DOWN).getBlockType() != BlockTypes.AIR) {
-            jumpData.setCount(jumpData.getCount() + 1);
-            player.offer(jumpData);
             player.offer(Keys.CAN_FLY, false);
-            JumpManager.updateBossBar(player, (float) jumpData.getCount() / (float) 100);
+            player.offer(JumpData.CHARGE_KEY, charge + 1);
+            JumpManager.updateBossBar(player, JumpManager.getPercent(charge, capacity));
         }
-    }
-    
-    private Optional<Double> getJumpLevel(Player player) {
-        Optional<String> option = Toolbox.getOptionFromSubject(player, "jump-level");
-        if (option.isPresent()) {
-            Optional<Double> jumpLevel = option.flatMap(Toolbox::parseDouble);
-            if (jumpLevel.isPresent()) {
-                return jumpLevel;
-            }
-            
-            Jump.getInstance().getLogger().warn("Failed to parse jump level for {} ({})", player.getName(), player.getUniqueId());
-        }
-        
-        return Jump.getInstance().getConfig().map(Config::getDefaultJumpLevel);
     }
 }

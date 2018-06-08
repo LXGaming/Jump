@@ -30,31 +30,39 @@ import java.util.Optional;
 
 public class JumpData extends AbstractData<JumpData, JumpImmutableData> {
     
-    public static final Key<Value<Integer>> COUNT_KEY = Key.builder()
+    public static final Key<Value<Integer>> CHARGE_KEY = Key.builder()
             .type(TypeTokens.INTEGER_VALUE_TOKEN)
-            .id("count")
-            .name("Count")
-            .query(DataQuery.of("Count"))
+            .id("charge")
+            .name("Charge")
+            .query(DataQuery.of("Charge"))
             .build();
     
-    private Integer count;
+    private int charge;
     
     protected JumpData() {
-        this(null);
+        this(0);
     }
     
-    public JumpData(Integer count) {
-        this.count = count;
+    public JumpData(int charge) {
+        this.charge = charge;
+        registerGettersAndSetters();
+    }
+    
+    @Override
+    protected void registerGettersAndSetters() {
+        registerFieldGetter(CHARGE_KEY, this::getCharge);
+        registerFieldSetter(CHARGE_KEY, this::setCharge);
+        registerKeyValue(CHARGE_KEY, this::charge);
     }
     
     @Override
     public Optional<JumpData> fill(DataHolder dataHolder, MergeFunction overlap) {
-        Optional<Integer> count = dataHolder.get(COUNT_KEY);
-        if (count.isPresent()) {
+        Optional<Integer> charge = dataHolder.get(CHARGE_KEY);
+        if (charge.isPresent()) {
             JumpData jumpData = this.copy();
-            jumpData.setCount(count.get());
+            jumpData.setCharge(charge.get());
             jumpData = overlap.merge(this, jumpData);
-            setCount(jumpData.getCount());
+            setCharge(jumpData.getCharge());
             return Optional.of(this);
         }
         
@@ -63,9 +71,9 @@ public class JumpData extends AbstractData<JumpData, JumpImmutableData> {
     
     @Override
     public Optional<JumpData> from(DataContainer container) {
-        Optional<Integer> count = container.getInt(COUNT_KEY.getQuery());
-        if (count.isPresent()) {
-            setCount(count.get());
+        Optional<Integer> charge = container.getInt(CHARGE_KEY.getQuery());
+        if (charge.isPresent()) {
+            setCharge(charge.get());
             return Optional.of(this);
         }
         
@@ -74,12 +82,12 @@ public class JumpData extends AbstractData<JumpData, JumpImmutableData> {
     
     @Override
     public JumpData copy() {
-        return new JumpData(getCount());
+        return new JumpData(getCharge());
     }
     
     @Override
     public JumpImmutableData asImmutable() {
-        return new JumpImmutableData(getCount());
+        return new JumpImmutableData(getCharge());
     }
     
     @Override
@@ -88,28 +96,21 @@ public class JumpData extends AbstractData<JumpData, JumpImmutableData> {
     }
     
     @Override
-    protected void registerGettersAndSetters() {
-        registerFieldGetter(COUNT_KEY, this::getCount);
-        registerFieldSetter(COUNT_KEY, this::setCount);
-        registerKeyValue(COUNT_KEY, this::getCountValue);
-    }
-    
-    @Override
     public DataContainer toContainer() {
         DataContainer dataContainer = super.toContainer();
-        dataContainer.set(COUNT_KEY, getCount());
+        dataContainer.set(CHARGE_KEY, getCharge());
         return dataContainer;
     }
     
-    public Integer getCount() {
-        return count;
+    public int getCharge() {
+        return charge;
     }
     
-    public void setCount(Integer count) {
-        this.count = count;
+    public void setCharge(int charge) {
+        this.charge = charge;
     }
     
-    private Value<Integer> getCountValue() {
-        return Sponge.getRegistry().getValueFactory().createValue(COUNT_KEY, getCount());
+    private Value<Integer> charge() {
+        return Sponge.getRegistry().getValueFactory().createValue(CHARGE_KEY, getCharge());
     }
 }

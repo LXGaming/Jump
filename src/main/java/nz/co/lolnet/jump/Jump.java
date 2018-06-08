@@ -94,7 +94,7 @@ public class Jump {
     
     @Listener
     public void onKeyRegistration(GameRegistryEvent.Register<Key<?>> event) {
-        event.register(JumpData.COUNT_KEY);
+        event.register(JumpData.CHARGE_KEY);
     }
     
     @Listener

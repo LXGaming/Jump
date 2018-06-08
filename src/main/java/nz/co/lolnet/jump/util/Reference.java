@@ -20,7 +20,7 @@ public class Reference {
     
     public static final String PLUGIN_ID = "jump";
     public static final String PLUGIN_NAME = "Jump";
-    public static final String PLUGIN_VERSION = "1.0.0";
+    public static final String PLUGIN_VERSION = "1.1.0";
     public static final String DESCRIPTION = "Reach for the stars";
     public static final String AUTHORS = "LX_Gaming";
     public static final String SOURCE = "https://github.com/lolnetnz/Jump";

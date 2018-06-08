@@ -23,15 +23,22 @@ import org.spongepowered.api.data.value.immutable.ImmutableValue;
 
 public class JumpImmutableData extends AbstractImmutableData<JumpImmutableData, JumpData> {
     
-    private final Integer count;
+    private final int charge;
     
-    protected JumpImmutableData(Integer count) {
-        this.count = count;
+    protected JumpImmutableData(int charge) {
+        this.charge = charge;
+        registerGetters();
+    }
+    
+    @Override
+    protected void registerGetters() {
+        registerFieldGetter(JumpData.CHARGE_KEY, this::getCharge);
+        registerKeyValue(JumpData.CHARGE_KEY, this::charge);
     }
     
     @Override
     public JumpData asMutable() {
-        return new JumpData(getCount());
+        return new JumpData(getCharge());
     }
     
     @Override
@@ -40,23 +47,17 @@ public class JumpImmutableData extends AbstractImmutableData<JumpImmutableData, 
     }
     
     @Override
-    protected void registerGetters() {
-        registerFieldGetter(JumpData.COUNT_KEY, this::getCount);
-        registerKeyValue(JumpData.COUNT_KEY, this::getCountValue);
-    }
-    
-    @Override
     public DataContainer toContainer() {
         DataContainer dataContainer = super.toContainer();
-        dataContainer.set(JumpData.COUNT_KEY, getCount());
+        dataContainer.set(JumpData.CHARGE_KEY, getCharge());
         return dataContainer;
     }
     
-    public Integer getCount() {
-        return count;
+    public int getCharge() {
+        return charge;
     }
     
-    private ImmutableValue<Integer> getCountValue() {
-        return Sponge.getRegistry().getValueFactory().createValue(JumpData.COUNT_KEY, getCount()).asImmutable();
+    private ImmutableValue<Integer> charge() {
+        return Sponge.getRegistry().getValueFactory().createValue(JumpData.CHARGE_KEY, getCharge()).asImmutable();
     }
 }
