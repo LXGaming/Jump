@@ -16,6 +16,8 @@
 
 package nz.co.lolnet.jump.managers;
 
+import com.flowpowered.math.imaginary.Quaterniond;
+import com.flowpowered.math.vector.Vector3d;
 import nz.co.lolnet.jump.Jump;
 import nz.co.lolnet.jump.configuration.Config;
 import nz.co.lolnet.jump.util.Reference;
@@ -93,6 +95,10 @@ public final class JumpManager {
     
     public static boolean isValidGameMode(GameMode gameMode) {
         return gameMode == GameModes.ADVENTURE || gameMode == GameModes.SURVIVAL;
+    }
+    
+    public static Vector3d getRotationVector(Vector3d rotation) {
+        return Quaterniond.fromAxesAnglesDeg(rotation.getX(), -rotation.getY(), rotation.getZ()).getDirection();
     }
     
     public static float getPercent(int charge, int capacity) {

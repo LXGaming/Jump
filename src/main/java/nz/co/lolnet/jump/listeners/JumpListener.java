@@ -16,8 +16,7 @@
 
 package nz.co.lolnet.jump.listeners;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.Vec3d;
+import com.flowpowered.math.vector.Vector3d;
 import nz.co.lolnet.jump.Jump;
 import nz.co.lolnet.jump.configuration.Config;
 import nz.co.lolnet.jump.data.JumpData;
@@ -61,8 +60,8 @@ public class JumpListener {
         JumpManager.updateBossBar(player, 0.0F);
         double multiplier = JumpManager.getMultiplier(player).orElse(0.0D);
         if (multiplier > 0.0D) {
-            Vec3d vector = ((Entity) player).getLookVec().scale(multiplier);
-            player.setVelocity(player.getVelocity().add(vector.x, multiplier, vector.z));
+            Vector3d vector = JumpManager.getRotationVector(player.getRotation()).mul(multiplier);
+            player.setVelocity(player.getVelocity().add(vector.getX(), multiplier, vector.getZ()));
         }
     }
     
