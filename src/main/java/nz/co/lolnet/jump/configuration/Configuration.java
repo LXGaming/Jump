@@ -26,7 +26,6 @@ import nz.co.lolnet.jump.Jump;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Objects;
 
 public class Configuration {
     
@@ -58,7 +57,6 @@ public class Configuration {
     
     public void saveConfiguration() {
         try {
-            Objects.requireNonNull(getConfig(), "Config cannot be null");
             getObjectMapper().serialize(getConfigurationNode());
             getConfigurationLoader().save(getConfigurationNode());
             Jump.getInstance().getLogger().info("Successfully saved configuration file.");
