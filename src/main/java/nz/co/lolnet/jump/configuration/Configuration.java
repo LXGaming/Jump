@@ -50,8 +50,7 @@ public class Configuration {
             Jump.getInstance().getLogger().info("Successfully loaded configuration file.");
         } catch (IOException | ObjectMappingException | RuntimeException ex) {
             configurationNode = getConfigurationLoader().createEmptyNode(ConfigurationOptions.defaults());
-            Jump.getInstance().getLogger().error("Encountered an error processing {}::loadConfiguration", getClass().getSimpleName());
-            ex.printStackTrace();
+            Jump.getInstance().getLogger().error("Encountered an error processing {}::loadConfiguration", getClass().getSimpleName(), ex);
         }
     }
     
@@ -61,8 +60,7 @@ public class Configuration {
             getConfigurationLoader().save(getConfigurationNode());
             Jump.getInstance().getLogger().info("Successfully saved configuration file.");
         } catch (IOException | ObjectMappingException | RuntimeException ex) {
-            Jump.getInstance().getLogger().error("Encountered an error processing {}::saveConfiguration", getClass().getSimpleName());
-            ex.printStackTrace();
+            Jump.getInstance().getLogger().error("Encountered an error processing {}::saveConfiguration", getClass().getSimpleName(), ex);
         }
     }
     
