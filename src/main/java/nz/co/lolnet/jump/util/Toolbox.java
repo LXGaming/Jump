@@ -131,16 +131,16 @@ public class Toolbox {
     }
     
     @SafeVarargs
-    public static <E> ArrayList<E> newArrayList(E... elements) throws NullPointerException {
+    public static <E> ArrayList<E> newArrayList(E... elements) {
         return Stream.of(elements).collect(Collectors.toCollection(ArrayList::new));
     }
     
     public static <K, V> HashMap<K, V> newHashMap() {
-        return new HashMap<K, V>();
+        return new HashMap<>();
     }
     
     @SafeVarargs
-    public static <E> LinkedHashSet<E> newLinkedHashSet(E... elements) throws NullPointerException {
+    public static <E> LinkedHashSet<E> newLinkedHashSet(E... elements) {
         return Stream.of(elements).collect(Collectors.toCollection(LinkedHashSet::new));
     }
 }

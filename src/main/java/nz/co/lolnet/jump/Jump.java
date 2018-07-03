@@ -17,7 +17,6 @@
 package nz.co.lolnet.jump;
 
 import com.google.inject.Inject;
-import ninja.leaping.configurate.objectmapping.GuiceObjectMapperFactory;
 import nz.co.lolnet.jump.commands.JumpCommand;
 import nz.co.lolnet.jump.configuration.Config;
 import nz.co.lolnet.jump.configuration.Configuration;
@@ -65,9 +64,6 @@ public class Jump {
     @Inject
     @DefaultConfig(sharedRoot = true)
     private Path path;
-    
-    @Inject
-    private GuiceObjectMapperFactory factory;
     
     private Configuration configuration;
     
@@ -134,10 +130,6 @@ public class Jump {
     
     public Path getPath() {
         return path;
-    }
-    
-    public GuiceObjectMapperFactory getFactory() {
-        return factory;
     }
     
     public Configuration getConfiguration() {
