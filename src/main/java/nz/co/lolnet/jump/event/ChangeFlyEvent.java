@@ -25,23 +25,29 @@ import org.spongepowered.api.event.impl.AbstractEvent;
 public class ChangeFlyEvent extends AbstractEvent implements TargetPlayerEvent, Cancellable {
     
     private final Cause cause;
+    private final boolean elytra;
     private final boolean flying;
     private final Player player;
     private boolean cancelled = false;
     
-    public ChangeFlyEvent(Player player, boolean flying, Cause cause) {
+    public ChangeFlyEvent(Player player, boolean flying, boolean elytra, Cause cause) {
         this.player = player;
         this.flying = flying;
+        this.elytra = elytra;
         this.cause = cause;
-    }
-    
-    public boolean isFlying() {
-        return flying;
     }
     
     @Override
     public Cause getCause() {
         return cause;
+    }
+    
+    public boolean isElytra() {
+        return elytra;
+    }
+    
+    public boolean isFlying() {
+        return flying;
     }
     
     @Override

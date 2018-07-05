@@ -43,11 +43,20 @@ public class JumpListener {
     
     @Listener
     public void onChangeFly(ChangeFlyEvent event, @Getter("getTargetEntity") Player player) {
-        if (event.isCancelled() || !event.isFlying() || !player.get(Keys.GAME_MODE).map(JumpManager::isValidGameMode).orElse(false)) {
+        if (event.isCancelled() || !player.get(Keys.GAME_MODE).map(JumpManager::isValidGameMode).orElse(false)) {
+            return;
+        }
+        
+        if (event.isElytra()) {
+            player.offer(Keys.CAN_FLY, !event.isFlying());
+            JumpManager.updateBossBar(player, !event.isFlying());
             return;
         }
         
         event.setCancelled(true);
+        if (!event.isFlying()) {
+            return;
+        }
         
         int capacity = JumpManager.getCapacity(player).orElse(-1);
         int charge = player.get(JumpData.CHARGE_KEY).orElse(-1);
@@ -116,7 +125,7 @@ public class JumpListener {
     
     @Listener
     public void onMoveEntity(MoveEntityEvent event, @Getter("getTargetEntity") Player player) {
-        if (event.isCancelled() || !player.get(Keys.GAME_MODE).map(JumpManager::isValidGameMode).orElse(false)) {
+        if (event.isCancelled() || !player.get(Keys.GAME_MODE).map(JumpManager::isValidGameMode).orElse(false) || player.get(Keys.IS_ELYTRA_FLYING).orElse(false)) {
             return;
         }
         

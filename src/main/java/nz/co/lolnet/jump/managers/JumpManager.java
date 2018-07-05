@@ -70,7 +70,7 @@ public final class JumpManager {
     
     public static void updateBossBar(Player player, float percent) {
         ServerBossBar serverBossBar = getBossBar(player).orElse(null);
-        if (serverBossBar == null) {
+        if (serverBossBar == null || serverBossBar.getPercent() == percent) {
             return;
         }
         
@@ -86,7 +86,7 @@ public final class JumpManager {
     
     public static void updateBossBar(Player player, boolean visible) {
         ServerBossBar serverBossBar = getBossBar(player).orElse(null);
-        if (serverBossBar == null) {
+        if (serverBossBar == null || serverBossBar.isVisible() == visible) {
             return;
         }
         

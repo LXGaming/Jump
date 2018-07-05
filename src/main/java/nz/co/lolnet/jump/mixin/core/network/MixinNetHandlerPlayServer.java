@@ -39,7 +39,7 @@ public abstract class MixinNetHandlerPlayServer {
     public void onProcessPlayerAbilities(PlayerCapabilities playerCapabilities, boolean isFlying) {
         if (playerCapabilities.isFlying != isFlying) {
             Sponge.getCauseStackManager().pushCause(this.player);
-            if (Sponge.getEventManager().post(new ChangeFlyEvent((Player) this.player, isFlying, Sponge.getCauseStackManager().getCurrentCause()))) {
+            if (Sponge.getEventManager().post(new ChangeFlyEvent((Player) this.player, isFlying, false, Sponge.getCauseStackManager().getCurrentCause()))) {
                 player.connection.sendPacket(new SPacketPlayerAbilities(playerCapabilities));
             } else {
                 playerCapabilities.isFlying = isFlying;
