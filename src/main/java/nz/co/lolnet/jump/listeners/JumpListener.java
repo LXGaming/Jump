@@ -76,7 +76,7 @@ public class JumpListener {
     
     @Listener
     public void onChangeGameMode(ChangeGameModeEvent event, @Getter("getTargetEntity") Player player) {
-        if (event.isCancelled()) {
+        if (event.isCancelled() || player.get(Keys.IS_ELYTRA_FLYING).orElse(false)) {
             return;
         }
         
