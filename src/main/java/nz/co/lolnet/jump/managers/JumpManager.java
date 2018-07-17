@@ -102,7 +102,7 @@ public final class JumpManager {
     }
     
     public static float getPercent(int charge, int capacity) {
-        if (capacity <= 0) {
+        if (capacity <= 0 || charge >= capacity) {
             return 1.0F;
         }
         
