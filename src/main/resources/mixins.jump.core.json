@@ -1,7 +1,7 @@
 {
   "required": true,
   "minVersion": "0.7.4",
-  "package": "nz.co.lolnet.jump.mixin.core",
+  "package": "io.github.lxgaming.jump.mixin.core",
   "refmap": "mixins.jump.refmap.json",
   "target": "@env(DEFAULT)",
   "compatibilityLevel": "JAVA_8",
