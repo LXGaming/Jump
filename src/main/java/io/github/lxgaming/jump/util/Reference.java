@@ -23,6 +23,6 @@ public class Reference {
     public static final String PLUGIN_VERSION = "1.1.3";
     public static final String DESCRIPTION = "Reach for the stars";
     public static final String AUTHORS = "James137137, LX_Gaming";
-    public static final String SOURCE = "https://github.com/LXGaming/Jump/";
+    public static final String SOURCE = "https://github.com/LXGaming/Jump";
     public static final String WEBSITE = "https://lxgaming.github.io/";
 }
